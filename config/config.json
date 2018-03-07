@@ -1,0 +1,68 @@
+
+
+[
+    {
+        "level": 1,
+        "pointsRequired": 0,
+        "numVowels": 2,
+        "numLetters": 6,
+        "pointsToNextLevel": 1000000,
+        "bonuses": []
+    },
+    {
+        "level": 2,
+        "pointsRequired": 1000000,
+        "numVowels": 2,
+        "numLetters": 7,
+        "pointsToNextLevel": 1500000,
+        "bonuses": [
+            {
+                "type": "WordHintBonus",
+                "count": 1
+            },
+            {
+                "type": "TimeBonus",
+                "count": 1
+                    },
+            {
+                "type": "HighlightWordBonus",
+                "count": 1
+            }
+        ]
+    },
+    {
+        "level": 3,
+        "pointsRequired": 2000000,
+        "bonuses": [
+            {
+                "type": "WordHintBonus"
+            },
+            {
+                "type": "TimeBonus"
+            },
+            {
+                "type": "ExpandWordListBonus"
+            }
+        ]
+    },
+    {
+        "level": 4,
+        "pointsRequired": 3000000,
+        "bonuses": [
+            {
+                "type": "WordHintBonus"
+            },
+            {
+                "type": "TimeBonus",
+                "time": 30
+            },
+            {
+                "type": "ExpandWordListBonus"
+            },
+            {
+                "type": "WildCardVowelBonus"
+            }
+        ]
+    }
+]
+
