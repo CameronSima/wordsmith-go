@@ -5,12 +5,18 @@ import (
 	"errors"
 	"net/http"
 
+	"wordsmith-go/game"
 	"wordsmith-go/user"
 )
 
 type UserResponse struct {
 	Status string     `json:"status"`
 	Data   *user.User `json:"data"`
+}
+
+type EndGameRequest struct {
+	User user.User `json:"user"`
+	Game game.Game `json:"game"`
 }
 
 //NewUserResponseJSON takes a user and a status and return a json byte array

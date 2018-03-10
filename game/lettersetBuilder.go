@@ -11,19 +11,29 @@ type Letterset struct {
 	totalLetterWeights int
 	numLetters         int
 	numVowels          int
-	Score              int
+	score              int
+}
+
+// implement sort()
+func (l Letterset) Len() int { return len(l.Letters) }
+func (l Letterset) Swap(i, j int) {
+	l.Letters[i], l.Letters[j] = l.Letters[j], l.Letters[i]
+}
+func (ls Letterset) Less(i, j int) bool {
+	return ls.Letters[i].Value < ls.Letters[j].Value
 }
 
 // NewLetterSet returns a new letterset
-func NewLetterSet(numLetters int, numVowels int) []Letter {
-	lb := Letterset{
+func NewLetterSet(numLetters int, numVowels int) Letterset {
+	l := Letterset{
 		numLetters: numLetters,
 		numVowels:  numVowels,
 	}
-	return lb.build()
+	l.build()
+	return l
 }
 
-func (l *Letterset) build() []Letter {
+func (l *Letterset) build() {
 	l.totalLetterWeights = l.getTotalWeights()
 
 	vowelCount := 0
@@ -33,7 +43,7 @@ func (l *Letterset) build() []Letter {
 		letters = l.getLetters(l.numLetters)
 		vowelCount = l.getVowelCount(letters)
 	}
-	return letters
+	l.Letters = letters
 }
 
 func (l Letterset) getLetters(numLetters int) []Letter {
@@ -97,10 +107,22 @@ func (l Letterset) getTotalWeights() int {
 	return total
 }
 
-func (l *Letterset) scoreLetters() int {
-	weights := l.totalLetterWeights
-	f := float64(weights)
-	scoreF := (1 - (0.001 * f)) * 70000
-	return int(scoreF)
+func (l *Letterset) Score() int {
 
+	weights := 0
+	for value, weight := range Weights {
+		for _, lett := range l.Letters {
+			if lett.Value == value {
+				weights += weight
+			}
+		}
+	}
+
+	println(weights)
+	f := float64(weights)
+	scoreF := (1 - (0.000001 * f)) * 70000
+	l.score = int(scoreF)
+
+	println(l.score)
+	return l.score
 }

@@ -11,7 +11,8 @@ import (
 )
 
 type NewGameHandler struct {
-	Repo user.Repository
+	UserRepo user.Repository
+	GameRepo game.Repository
 }
 
 func (h NewGameHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -21,19 +22,20 @@ func (h NewGameHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	userReq := user.User{}
 	err := json.NewDecoder(req.Body).Decode(&userReq)
 	if err != nil {
-		println("ERROR:")
-		println(err.Error())
 		http.Error(rw, "a valid user was not supplied", http.StatusBadRequest)
 		return
 	}
 
-	println("REQES")
-	println(userReq.Username)
-	userRec, err := h.Repo.Find(c, &userReq)
+	userRec, err := h.UserRepo.Find(c, &userReq)
 	if err != nil {
 		http.Error(rw, err.Error()+" could not find user", http.StatusInternalServerError)
 		return
 	}
-	g := game.NewGame(userRec.LevelConfig)
+	g := game.NewGame(userRec.LevelConfig, userRec.Username)
+	_, err = h.GameRepo.Save(c, &g)
+	if err != nil {
+		http.Error(rw, err.Error()+" could not save the game", http.StatusInternalServerError)
+	}
+
 	json.NewEncoder(rw).Encode(g)
 }

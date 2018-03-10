@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"appengine-guestbook-go/game"
+	"wordsmith-go/game"
 )
 
 func TestGetAllPossibleWords(t *testing.T) {

@@ -31,16 +31,7 @@ func (r *repo) Find(ctx context.Context, u *User) (*User, error) {
 	if err := datastore.Get(ctx, key, &userRec); err != nil {
 		return &userRec, err
 	}
-	println("USER REC")
-	println(userRec.Username)
-	println(userRec.Password)
 	return &userRec, nil
-
-	// err := datastore.Get(ctx, u.Key, &userRec)
-	// if err != nil {
-	// 	return &userRec, err
-	// }
-	// return &userRec, nil
 }
 
 func (r *repo) Save(ctx context.Context, u *User) (*User, error) {

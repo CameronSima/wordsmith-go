@@ -3,8 +3,8 @@ package user
 import (
 	"testing"
 
-	"appengine-guestbook-go/config"
-	"appengine-guestbook-go/game"
+	"wordsmith-go/config"
+	"wordsmith-go/game"
 )
 
 func TestGetUserLevel(t *testing.T) {

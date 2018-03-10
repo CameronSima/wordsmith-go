@@ -106,7 +106,7 @@ func (u *User) incrementBonus(bonusName string, count int) {
 // NewUser returns a new User with defaults and hashed password.
 func NewUser(u User, configs config.Levels) (User, error) {
 	result := User{}
-	hashed, err := hashPassword(u.Password)
+	hashed, err := HashPassword(u.Password)
 	if err != nil {
 		return result, err
 	}
@@ -125,7 +125,7 @@ func (u User) CheckPassword(pw string) error {
 	return bcrypt.CompareHashAndPassword(hashedPwBtyeArr, pwBtyeArr)
 }
 
-func hashPassword(pw string) (string, error) {
+func HashPassword(pw string) (string, error) {
 	byteArr := []byte(pw)
 	hashed, err := bcrypt.GenerateFromPassword(byteArr, bcrypt.DefaultCost)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"wordsmith-go/game"
 
 	"wordsmith-go/config"
 
@@ -20,22 +21,29 @@ func init() {
 	// Initialize level configs and repos
 	configs := config.NewLevelConfig()
 	userRepo := user.NewDatastoreRepository()
+	gameRepo := game.NewDatastoreRepository()
 
 	// initialize handlers
 	signUpHandler := handlers.SignUpHandler{
 		Repo:         userRepo,
 		LevelConfigs: configs,
 	}
-	newGameHandler := handlers.NewGameHandler{
-		Repo: userRepo,
-	}
 	SignInHandler := handlers.SignInHandler{
 		Repo: userRepo,
+	}
+	newGameHandler := handlers.NewGameHandler{
+		UserRepo: userRepo,
+		GameRepo: gameRepo,
+	}
+	endGameHandler := handlers.EndGameHandler{
+		UserRepo:     userRepo,
+		GameRepo:     gameRepo,
+		LevelConfigs: configs,
 	}
 
 	http.HandleFunc("/", root)
 	http.HandleFunc("/login", handlers.CorsHandler(SignInHandler))
-	http.HandleFunc("/endGame", endGame)
+	http.HandleFunc("/endGame", handlers.CorsHandler(endGameHandler))
 	http.Handle("/signUp", handlers.CorsHandler(signUpHandler))
 	http.HandleFunc("/allUsers", allUsers)
 	http.Handle("/newGame", handlers.CorsHandler(newGameHandler))
@@ -51,13 +59,6 @@ func allUsers(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	json.NewEncoder(rw).Encode(users)
-}
-
-func endGame(rw http.ResponseWriter, req *http.Request) {
-
-	defer req.Body.Close()
-	rw.Header().Set("Content-Type", "application/json")
-	rw.WriteHeader(http.StatusOK)
 }
 
 // Awesome landing page

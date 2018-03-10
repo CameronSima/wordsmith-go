@@ -37,6 +37,8 @@ func (h SignInHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	userRec.Password = ""
+
 	// marshal back to json
 	userJSON, err := json.Marshal(userRec)
 	if err != nil {

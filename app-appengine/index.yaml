@@ -1,9 +1,4 @@
 indexes:
-- kind: Greeting
-  ancestor: yes
-  properties:
-  - name: Date
-    direction: desc
 - kind: User   
   ancestor: yes   
   properties:
@@ -13,5 +8,14 @@ indexes:
     - name: GameSettings
     - name: GameStats  
     - name: IsAdmin
+    - kind: Game  
+    ancestor: yes   
+    properties:
+      - name: Ended
+      - name: Letterset
+      - name: FinalScore
+      - name: StartTime
+      - name: EndTime 
+      - name: Username
  
 

@@ -36,8 +36,8 @@ func (w Word) getDefinition() string {
 	return w.Definitions[rand.Intn(len(w.Definitions))]
 }
 
-func (w Word) getScore() int {
-	if w.Score != 0 {
+func (w *Word) getScore() int {
+	if w.Score == 0 {
 		sum := 0
 		for _, letter := range w.Letters {
 			sum += letter.Points
