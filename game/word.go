@@ -8,9 +8,9 @@ import (
 
 // Word is what this game is all about!
 type Word struct {
-	Letters     []Letter
-	Definitions []string
-	Score       int
+	Letters     []Letter `json:"letters"`
+	Definitions []string `json:"definitions"`
+	Score       int      `json:"score"`
 }
 
 func (l Letter) isVowel() bool {

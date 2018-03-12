@@ -20,6 +20,8 @@ type LevelConfig struct {
 	NumVowels         int           `json:"numVowels"`
 	NumLetters        int           `json:"numLetters"`
 	PointsToNextLevel int           `json:"pointsToNextLevel"`
+	GameTime          int           `json:"gameTime"`
+	NumWords          int           `json:"numWords"`
 }
 
 // NewLevelConfig returns a new instance of Levels[]

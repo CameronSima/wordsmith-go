@@ -93,11 +93,7 @@ func TestEndGameSubmittedEndedGame(t *testing.T) {
 	handler.ServeHTTP(w, req)
 
 	resp := w.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
-
-	fmt.Println("RESPONSE")
-	fmt.Println(resp.StatusCode)
-	println(string(body))
+	//body, _ := ioutil.ReadAll(resp.Body)
 
 	expectedResponse := 500
 	actualResponse := resp.StatusCode
