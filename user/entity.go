@@ -22,8 +22,9 @@ type User struct {
 
 // GameStats are a user's Game stats, such as top word.
 type GameStats struct {
-	TopWord game.Word `json:"topWord"`
-	Points  int       `json:"points"`
+	TopWord   game.Word `json:"topWord"`
+	Points    int       `json:"points"`
+	HighScore int       `json:"highScore"`
 }
 
 // UpdateStats ensures a User's LevelConfig and GameStats reflect his current point count
@@ -40,8 +41,19 @@ func (u *User) UpdateStats(l config.Levels, g game.Game) {
 
 func (u *User) updateGameStats(g game.Game) {
 	u.GameStats.Points += g.FinalScore
+	u.updatedHighScore(g)
+	u.updateTopWord(g)
+}
+
+func (u *User) updateTopWord(g game.Game) {
 	if g.TopWord.Score > u.GameStats.TopWord.Score {
 		u.GameStats.TopWord = g.TopWord
+	}
+}
+
+func (u *User) updatedHighScore(g game.Game) {
+	if g.FinalScore > u.GameStats.HighScore {
+		u.GameStats.HighScore = g.FinalScore
 	}
 }
 
