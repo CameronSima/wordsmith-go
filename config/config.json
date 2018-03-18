@@ -9,7 +9,12 @@
         "numLetters": 6,
         "numWords": 8,
         "gameTime": 120,
-        "bonuses": []
+        "bonuses": [
+            {
+                "type": "LetterBonus",
+                "count": 1
+            }
+        ]
     },
     {
         "level": 2,

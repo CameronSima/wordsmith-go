@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"google.golang.org/appengine"
@@ -27,6 +28,8 @@ func (h SignUpHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	fmt.Println(userReq)
+
 	// check user doesn't already exist
 	existingUser, err := h.Repo.Find(c, &userReq)
 	if err == nil || existingUser.Username == userReq.Username {
@@ -37,21 +40,21 @@ func (h SignUpHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// Add default values and hash password
 	u, err := user.NewUser(userReq, h.LevelConfigs)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		http.Error(rw, err.Error()+" error creating default user", http.StatusInternalServerError)
 		return
 	}
 
 	// Save user
 	userRec, err := h.Repo.Save(c, &u)
 	if err != nil {
-		http.Error(rw, err.Error()+"heres the err", http.StatusInternalServerError)
+		http.Error(rw, err.Error()+" heres the err", http.StatusInternalServerError)
 		return
 	}
 
 	// send response
 	responseJSON, err := NewUserResponseJSON(userRec, "success")
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+		http.Error(rw, err.Error()+" error creating response object", http.StatusBadRequest)
 		return
 	}
 

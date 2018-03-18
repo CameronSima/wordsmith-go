@@ -2,12 +2,11 @@ package user
 
 import (
 	"errors"
-
-	"golang.org/x/crypto/bcrypt"
-
 	"wordsmith-go/bonus"
 	"wordsmith-go/config"
 	"wordsmith-go/game"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // User represents a user.
@@ -18,6 +17,10 @@ type User struct {
 	LevelConfig config.LevelConfig `json:"levelConfig"`
 	GameStats   GameStats          `json:"gameStats"`
 	IsAdmin     bool               `json:"-"`
+
+	// Letters are stored on the user entity because appengine doesn't allow
+	// arrays of arrays ([[]LetterBonus]Bonus)
+	Letters []bonus.LetterBonus `json:"letters"`
 }
 
 // GameStats are a user's Game stats, such as top word.
@@ -25,6 +28,38 @@ type GameStats struct {
 	TopWord   game.Word `json:"topWord"`
 	Points    int       `json:"points"`
 	HighScore int       `json:"highScore"`
+}
+
+// NewUser returns a new User with defaults and hashed password.
+func NewUser(u User, configs config.Levels) (User, error) {
+	result := User{}
+	hashed, err := HashPassword(u.Password)
+	if err != nil {
+		return result, err
+	}
+
+	// testing
+	l := []bonus.LetterBonus{
+		bonus.LetterBonus{
+			Value: "A",
+			Count: 1,
+		},
+		bonus.LetterBonus{
+			Value: "E",
+			Count: 2,
+		},
+		bonus.LetterBonus{
+			Value: "R",
+			Count: 3,
+		},
+	}
+	u.Letters = l
+
+	result.LevelConfig = configs[0]
+	result.Username = u.Username
+	result.Password = hashed
+	result.IsAdmin = false
+	return result, nil
 }
 
 // UpdateStats ensures a User's LevelConfig and GameStats reflect his current point count
@@ -113,21 +148,6 @@ func (u *User) incrementBonus(bonusName string, count int) {
 			break
 		}
 	}
-}
-
-// NewUser returns a new User with defaults and hashed password.
-func NewUser(u User, configs config.Levels) (User, error) {
-	result := User{}
-	hashed, err := HashPassword(u.Password)
-	if err != nil {
-		return result, err
-	}
-
-	result.LevelConfig = configs[0]
-	result.Username = u.Username
-	result.Password = hashed
-	result.IsAdmin = false
-	return result, nil
 }
 
 // CheckPassword checks a user's saved hashed password against a string.
