@@ -53,7 +53,7 @@ func NewUser(u User, configs config.Levels) (User, error) {
 			Count: 3,
 		},
 	}
-	u.Letters = l
+	result.Letters = l
 
 	result.LevelConfig = configs[0]
 	result.Username = u.Username
