@@ -8,14 +8,14 @@ indexes:
     - name: GameSettings
     - name: GameStats  
     - name: IsAdmin
-    - kind: Game  
-    ancestor: yes   
-    properties:
-      - name: Ended
-      - name: Letterset
-      - name: FinalScore
-      - name: StartTime
-      - name: EndTime 
-      - name: Username
- 
+- kind: Game  
+  ancestor: yes   
+  properties:
+    - name: Ended
+    - name: Letterset
+    - name: FinalScore
+    - name: StartTime
+    - name: EndTime 
+    - name: Username
+
 

@@ -2,6 +2,7 @@ package game
 
 import (
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -19,8 +20,8 @@ func (l Letterset) Len() int { return len(l.Letters) }
 func (l Letterset) Swap(i, j int) {
 	l.Letters[i], l.Letters[j] = l.Letters[j], l.Letters[i]
 }
-func (ls Letterset) Less(i, j int) bool {
-	return ls.Letters[i].Value < ls.Letters[j].Value
+func (l Letterset) Less(i, j int) bool {
+	return l.Letters[i].Value < l.Letters[j].Value
 }
 
 // NewLetterSet returns a new letterset
@@ -52,7 +53,7 @@ func (l Letterset) getLetters(numLetters int) []Letter {
 	index := 0
 	for index < numLetters {
 		letter := l.getRandomLetter()
-		letter.ID = index
+		letter.ID = strconv.Itoa(index)
 		letters[index] = letter
 		index++
 	}
@@ -94,8 +95,10 @@ func (l Letterset) getVowelCount(letters []Letter) int {
 // GetRandomFloat between 0 and total weights
 func (l Letterset) getRandomInt() int {
 	max := l.totalLetterWeights
-	rand.Seed(time.Now().UTC().Unix())
-	return rand.Intn(max)
+	rand.Seed(time.Now().UnixNano())
+	r := rand.Intn(max)
+	println(r)
+	return r
 }
 
 // GetTotalWeights of letters
@@ -108,7 +111,6 @@ func (l Letterset) getTotalWeights() int {
 }
 
 func (l *Letterset) Score() int {
-
 	weights := 0
 	for value, weight := range Weights {
 		for _, lett := range l.Letters {
@@ -117,12 +119,8 @@ func (l *Letterset) Score() int {
 			}
 		}
 	}
-
-	println(weights)
 	f := float64(weights)
 	scoreF := (1 - (0.000001 * f)) * 70000
 	l.score = int(scoreF)
-
-	println(l.score)
 	return l.score
 }

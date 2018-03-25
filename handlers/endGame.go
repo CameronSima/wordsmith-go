@@ -28,7 +28,7 @@ func (h EndGameHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	endGameRequest := EndGameRequest{}
 	err := json.NewDecoder(req.Body).Decode(&endGameRequest)
 	if err != nil {
-		http.Error(rw, "Could not process the request", http.StatusInternalServerError)
+		http.Error(rw, err.Error()+": Could not decode the user", http.StatusInternalServerError)
 		return
 	}
 	gameReq := endGameRequest.Game
@@ -70,9 +70,15 @@ func (h EndGameHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// update and save user
 	u.UpdateStats(h.LevelConfigs, *updatedGame)
+	updatedUser, err := h.UserRepo.Save(c, u)
+	if err != nil {
+		http.Error(rw, err.Error()+"could not update the user", http.StatusInternalServerError)
+	}
+
 	// send response
-	responseJSON, err := NewUserResponseJSON(u, "end game success")
+	responseJSON, err := NewUserResponseJSON(updatedUser, "end game success")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return

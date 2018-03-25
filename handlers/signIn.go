@@ -20,7 +20,7 @@ func (h SignInHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	userReq := user.User{}
 	err := json.NewDecoder(req.Body).Decode(&userReq)
 	if err != nil {
-		http.Error(rw, "Could not process the request", http.StatusInternalServerError)
+		http.Error(rw, "Could not decode the user", http.StatusInternalServerError)
 		return
 	}
 
@@ -39,14 +39,14 @@ func (h SignInHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	userRec.Password = ""
 
-	// marshal back to json
-	userJSON, err := json.Marshal(userRec)
+	// send response
+	responseJSON, err := NewUserResponseJSON(userRec, "success")
 	if err != nil {
-		http.Error(rw, err.Error(), 500)
+		http.Error(rw, err.Error()+" error creating response object", http.StatusBadRequest)
 		return
 	}
 
 	defer req.Body.Close()
-	rw.Write(userJSON)
+	rw.Write(responseJSON)
 	return
 }

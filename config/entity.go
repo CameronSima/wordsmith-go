@@ -26,6 +26,9 @@ type LevelConfig struct {
 
 // NewLevelConfig returns a new instance of Levels[]
 func NewLevelConfig() Levels {
+
+	// path for deployment
+	// absPath, _ := filepath.Abs("wordsmith-go/config/config.json")
 	absPath, _ := filepath.Abs("../config/config.json")
 	file, err := os.Open(absPath)
 	defer file.Close()

@@ -12,8 +12,8 @@ type Game struct {
 	NumWords       int           `json:"numWords" datastore:"-"`
 	NumVowels      int           `json:"numVowels" datastore:"-"`
 	Ended          bool          `json:"ended"`
-	Letterset      []Letter      `json:"letterset"`
-	LettersetBonus int           `json:"lettersetBonus"`
+	Letterset      []Letter      `json:"letterset" datastore:"-"`
+	LettersetBonus int           `json:"lettersetBonus" datastore:"-"`
 	FinalScore     int           `json:"finalScore"`
 	GameScore      int           `json:"gameScore" datastore:"-"`
 	GameTime       int           `json:"gameTime" datastore:"-"`

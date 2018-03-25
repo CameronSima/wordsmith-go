@@ -10,6 +10,7 @@ import (
 	"wordsmith-go/config"
 
 	"wordsmith-go/handlers"
+	"wordsmith-go/oauth"
 	"wordsmith-go/user"
 
 	"google.golang.org/appengine"
@@ -47,6 +48,8 @@ func init() {
 	http.Handle("/signUp", handlers.CorsHandler(signUpHandler))
 	http.HandleFunc("/allUsers", allUsers)
 	http.Handle("/newGame", handlers.CorsHandler(newGameHandler))
+
+	http.HandleFunc("/facebook_login", oauth.HandleFacebookLogin)
 }
 
 func allUsers(rw http.ResponseWriter, req *http.Request) {

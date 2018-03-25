@@ -38,9 +38,9 @@ type Dictionary struct {
 // Letter is the basic building block of a Word.
 type Letter struct {
 	Value       string `json:"value"`
-	ID          int    `json:"id"`
+	ID          string `json:"id"`
 	Points      int    `json:"points"`
-	Weight      int    `json:"weight"`
-	Selected    bool   `json:selected"`
-	Highlighted bool   `json:"highlighted"`
+	Weight      int    `json:"-"`
+	Selected    bool   `json:"-"`
+	Highlighted bool   `json:"-"`
 }
