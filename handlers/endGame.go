@@ -72,6 +72,7 @@ func (h EndGameHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	// update and save user
 	u.UpdateStats(h.LevelConfigs, *updatedGame)
+	u.BonusSelectionPoints += userReq.BonusSelectionPoints
 	updatedUser, err := h.UserRepo.Save(c, u)
 	if err != nil {
 		http.Error(rw, err.Error()+"could not update the user", http.StatusInternalServerError)

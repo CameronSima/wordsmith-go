@@ -5,8 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-
-	"wordsmith-go/bonus"
 )
 
 // Levels contains all the levels available to a User
@@ -14,14 +12,13 @@ type Levels []LevelConfig
 
 // LevelConfig represents a user's current level
 type LevelConfig struct {
-	Level             int           `json:"level"`
-	PointsRequired    int           `json:"pointsRequired"`
-	Bonuses           []bonus.Bonus `json:"bonuses"`
-	NumVowels         int           `json:"numVowels"`
-	NumLetters        int           `json:"numLetters"`
-	PointsToNextLevel int           `json:"pointsToNextLevel"`
-	GameTime          int           `json:"gameTime"`
-	NumWords          int           `json:"numWords"`
+	Level             int `json:"level"`
+	PointsRequired    int `json:"pointsRequired"`
+	NumVowels         int `json:"numVowels"`
+	NumLetters        int `json:"numLetters"`
+	PointsToNextLevel int `json:"pointsToNextLevel"`
+	GameTime          int `json:"gameTime"`
+	NumWords          int `json:"numWords"`
 }
 
 // NewLevelConfig returns a new instance of Levels[]

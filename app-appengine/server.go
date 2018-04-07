@@ -41,6 +41,9 @@ func init() {
 		GameRepo:     gameRepo,
 		LevelConfigs: configs,
 	}
+	updateBonusesHandler := handlers.UpdateBonusesHandler{
+		Repo: userRepo,
+	}
 
 	http.HandleFunc("/", root)
 	http.HandleFunc("/login", handlers.CorsHandler(SignInHandler))
@@ -48,6 +51,7 @@ func init() {
 	http.Handle("/signUp", handlers.CorsHandler(signUpHandler))
 	http.HandleFunc("/allUsers", allUsers)
 	http.Handle("/newGame", handlers.CorsHandler(newGameHandler))
+	http.Handle("/update-bonuses", handlers.CorsHandler(updateBonusesHandler))
 
 	http.HandleFunc("/facebook_login", oauth.HandleFacebookLogin)
 }

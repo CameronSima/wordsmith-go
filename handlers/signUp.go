@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"google.golang.org/appengine"
@@ -27,8 +26,6 @@ func (h SignUpHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, "invalid user data supplied", http.StatusInternalServerError)
 		return
 	}
-
-	fmt.Println(userReq)
 
 	// check user doesn't already exist
 	existingUser, err := h.Repo.Find(c, &userReq)

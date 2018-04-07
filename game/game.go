@@ -22,7 +22,7 @@ type Game struct {
 	WordsUsed      []Word        `json:"wordsUsed" datastore:"-"`
 	StartTime      time.Time     `json:"startTime"`
 	EndTime        time.Time     `json:"endTime"`
-	BonusesUsed    []bonus.Bonus `json:"bonuses" datastore:"-"`
+	Bonuses        []bonus.Bonus `json:"bonuses" datastore:"-"`
 	Username       string        `json:"username"`
 }
 

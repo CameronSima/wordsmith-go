@@ -2,6 +2,7 @@ package user
 
 import (
 	"testing"
+	"wordsmith-go/bonus"
 
 	"wordsmith-go/config"
 	"wordsmith-go/game"
@@ -20,7 +21,31 @@ func TestGetUserLevel(t *testing.T) {
 	actual := u.getUserLevel(confs).Level
 
 	if expected != actual {
-		t.Errorf("Test failed, expected:'%s', got:'%s'", expected, actual)
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expected, actual)
+	}
+}
+
+func TestGetUserLevel3(t *testing.T) {
+	confs := config.NewLevelConfig()
+
+	u := User{
+		GameStats: GameStats{
+			Points: 2013789,
+		},
+		LevelConfig: confs[0],
+	}
+	expected := 3
+	actual := u.getUserLevel(confs).Level
+
+	expectedPointsToNextLevel := 2500000
+	actualPointsToNextLevel := u.getUserLevel(confs).PointsToNextLevel
+
+	if expected != actual {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expected, actual)
+	}
+
+	if expectedPointsToNextLevel != actualPointsToNextLevel {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedPointsToNextLevel, actualPointsToNextLevel)
 	}
 }
 
@@ -64,34 +89,12 @@ func TestUpdateUserLevel(t *testing.T) {
 	}
 }
 
-func TestAddBonus(t *testing.T) {
+func TestUpdateUserLevel3(t *testing.T) {
 	confs := config.NewLevelConfig()
 
 	u := User{
 		GameStats: GameStats{
-			Points: 15000,
-			TopWord: game.Word{
-				Score: 10000,
-			},
-		},
-		LevelConfig: confs[1],
-	}
-	u.AddBonus("TimeBonus", 5)
-
-	expected := 6
-	actual := u.LevelConfig.Bonuses[1].Count
-
-	if expected != actual {
-		t.Errorf("Test failed, expected:'%d', got:'%d'", expected, actual)
-	}
-}
-
-func TestMergeBonus(t *testing.T) {
-	confs := config.NewLevelConfig()
-
-	u := User{
-		GameStats: GameStats{
-			Points: 15000,
+			Points: 1400000,
 			TopWord: game.Word{
 				Score: 10000,
 			},
@@ -99,25 +102,227 @@ func TestMergeBonus(t *testing.T) {
 		LevelConfig: confs[1],
 	}
 
-	// user had an awesome game, scoring 1,005,000 points. Now should level up to
-	// level 2, and has earned an additional 2 WordHint bonuses.
 	g := game.Game{
-		FinalScore: 1005000,
+		FinalScore: 200000,
 		TopWord: game.Word{
 			Score: 20000,
 		},
 	}
-
-	// simulate user purchase of 2 WordHint bonuses :)
-	u.AddBonus("WordHintBonus", 2)
-
 	u.UpdateStats(confs, g)
 
-	expectedWordHintBonusCount := 3
-	actualWordHintBonusCount := u.LevelConfig.Bonuses[0].Count
+	expectedLevel := 3
+	actualLevel := u.getUserLevel(confs).Level
+	if expectedLevel != actualLevel {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLevel, actualLevel)
+	}
+}
 
-	if expectedWordHintBonusCount != actualWordHintBonusCount {
-		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedWordHintBonusCount, actualWordHintBonusCount)
+func TestMergeBonus(t *testing.T) {
+	u := User{}
+	letters := []bonus.Bonus{
+		bonus.Bonus{
+			Value: "A",
+			Count: 2,
+		},
+		bonus.Bonus{
+			Value: "B",
+			Count: 1,
+		},
+	}
+	bonuses := []bonus.Bonus{
+		bonus.Bonus{
+			Type:  "WordHintBonus",
+			Count: 1,
+		},
+	}
+	u.Letters = letters
+	u.Bonuses = bonuses
+	u.BonusSelectionPoints = 6
+
+	purchasedBonuses := []bonus.Bonus{
+		bonus.Bonus{
+			Type:  "WordHintBonus",
+			Count: 1,
+		},
+		bonus.Bonus{
+			Type:  "LetterBonus",
+			Count: 2,
+		},
+	}
+	purchasedLetters := []bonus.Bonus{
+		bonus.Bonus{
+			Value: "A",
+			Count: 1,
+		},
+		bonus.Bonus{
+			Value: "E",
+			Count: 2,
+		},
+	}
+
+	success := u.UpdateBonuses(purchasedBonuses, purchasedLetters)
+
+	expectedLetterACount := 3
+	expectedLetterBCount := 1
+	expectedLetterECount := 2
+	expectedWordHintBonuses := 2
+	expectedLetterBonuses := 2
+	expectedRemainingBonusSelectionPoints := 0
+	actualLetterACount := 0
+	actualLetterBCount := 0
+	actualLetterECount := 0
+	actualWordHintBonuses := 0
+	actualLetterBonuses := 0
+	actualRemainingBonusSelectionPoints := u.BonusSelectionPoints
+
+	for _, l := range u.Letters {
+		switch val := l.Value; val {
+		case "A":
+			actualLetterACount += l.Count
+		case "B":
+			actualLetterBCount += l.Count
+		case "E":
+			actualLetterECount += l.Count
+		default:
+			println(val)
+		}
+	}
+
+	for _, l := range u.Bonuses {
+		switch val := l.Type; val {
+		case "WordHintBonus":
+			actualWordHintBonuses += l.Count
+		case "LetterBonus":
+			actualLetterBonuses += l.Count
+		}
+	}
+
+	if success != true {
+		t.Errorf("Test failed, merge was not successful (not enough selectionPoints)")
+	}
+
+	if expectedLetterACount != actualLetterACount {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterACount, actualLetterACount)
+	}
+	if expectedLetterBCount != actualLetterBCount {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterBCount, actualLetterBCount)
+	}
+	if expectedLetterECount != actualLetterECount {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterECount, actualLetterECount)
+	}
+	if expectedWordHintBonuses != actualWordHintBonuses {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedWordHintBonuses, actualWordHintBonuses)
+	}
+	if expectedLetterBonuses != actualLetterBonuses {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterBonuses, actualLetterBonuses)
+	}
+	if actualRemainingBonusSelectionPoints != actualRemainingBonusSelectionPoints {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedRemainingBonusSelectionPoints, actualRemainingBonusSelectionPoints)
+	}
+
+}
+
+func TestMergeBonusFail(t *testing.T) {
+	u := User{}
+	letters := []bonus.Bonus{
+		bonus.Bonus{
+			Value: "A",
+			Count: 2,
+		},
+		bonus.Bonus{
+			Value: "B",
+			Count: 1,
+		},
+	}
+	bonuses := []bonus.Bonus{
+		bonus.Bonus{
+			Type:  "WordHintBonus",
+			Count: 1,
+		},
+	}
+	u.Letters = letters
+	u.Bonuses = bonuses
+	u.BonusSelectionPoints = 4
+
+	purchasedBonuses := []bonus.Bonus{
+		bonus.Bonus{
+			Type:  "WordHintBonus",
+			Count: 1,
+		},
+		bonus.Bonus{
+			Type:  "LetterBonus",
+			Count: 2,
+		},
+	}
+	purchasedLetters := []bonus.Bonus{
+		bonus.Bonus{
+			Value: "A",
+			Count: 1,
+		},
+		bonus.Bonus{
+			Value: "E",
+			Count: 2,
+		},
+	}
+
+	success := u.UpdateBonuses(purchasedBonuses, purchasedLetters)
+
+	expectedLetterACount := 2
+	expectedLetterBCount := 1
+	expectedLetterECount := 0
+	expectedWordHintBonuses := 1
+	expectedLetterBonuses := 0
+	expectedRemainingBonusSelectionPoints := 4
+	actualLetterACount := 0
+	actualLetterBCount := 0
+	actualLetterECount := 0
+	actualWordHintBonuses := 0
+	actualLetterBonuses := 0
+	actualRemainingBonusSelectionPoints := u.BonusSelectionPoints
+
+	for _, l := range u.Letters {
+		switch val := l.Value; val {
+		case "A":
+			actualLetterACount += l.Count
+		case "B":
+			actualLetterBCount += l.Count
+		case "E":
+			actualLetterECount += l.Count
+		default:
+			println(val)
+		}
+	}
+
+	for _, l := range u.Bonuses {
+		switch val := l.Type; val {
+		case "WordHintBonus":
+			actualWordHintBonuses += l.Count
+		case "LetterBonus":
+			actualLetterBonuses += l.Count
+		}
+	}
+
+	if success != false {
+		t.Errorf("Test failed, merge was not successful (not enough selectionPoints)")
+	}
+
+	if expectedLetterACount != actualLetterACount {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterACount, actualLetterACount)
+	}
+	if expectedLetterBCount != actualLetterBCount {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterBCount, actualLetterBCount)
+	}
+	if expectedLetterECount != actualLetterECount {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterECount, actualLetterECount)
+	}
+	if expectedWordHintBonuses != actualWordHintBonuses {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedWordHintBonuses, actualWordHintBonuses)
+	}
+	if expectedLetterBonuses != actualLetterBonuses {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterBonuses, actualLetterBonuses)
+	}
+	if actualRemainingBonusSelectionPoints != actualRemainingBonusSelectionPoints {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedRemainingBonusSelectionPoints, actualRemainingBonusSelectionPoints)
 	}
 
 }

@@ -11,16 +11,18 @@ import (
 
 // User represents a user.
 type User struct {
-	Username    string             `json:"username"`
-	Password    string             `json:"password"`
-	Email       string             `json:"email"`
-	LevelConfig config.LevelConfig `json:"levelConfig"`
-	GameStats   GameStats          `json:"gameStats"`
-	IsAdmin     bool               `json:"-"`
+	Username             string             `json:"username"`
+	Password             string             `json:"password"`
+	Email                string             `json:"email"`
+	LevelConfig          config.LevelConfig `json:"levelConfig"`
+	GameStats            GameStats          `json:"gameStats"`
+	IsAdmin              bool               `json:"-"`
+	BonusSelectionPoints int                `json:"bonusSelectionPoints"`
 
-	// Letters are stored on the user entity because appengine doesn't allow
+	// Letters are stored separately on the user entity because appengine doesn't allow
 	// arrays of arrays ([[]LetterBonus]Bonus)
-	Letters []bonus.LetterBonus `json:"letters"`
+	Letters []bonus.Bonus `json:"letters"`
+	Bonuses []bonus.Bonus `json:"bonuses"`
 }
 
 // GameStats are a user's Game stats, such as top word.
@@ -39,16 +41,16 @@ func NewUser(u User, configs config.Levels) (User, error) {
 	}
 
 	// testing
-	l := []bonus.LetterBonus{
-		bonus.LetterBonus{
+	l := []bonus.Bonus{
+		bonus.Bonus{
 			Value: "A",
 			Count: 1,
 		},
-		bonus.LetterBonus{
+		bonus.Bonus{
 			Value: "E",
 			Count: 2,
 		},
-		bonus.LetterBonus{
+		bonus.Bonus{
 			Value: "R",
 			Count: 3,
 		},
@@ -70,7 +72,6 @@ func (u *User) UpdateStats(l config.Levels, g game.Game) {
 	if userLevel.Level == u.LevelConfig.Level {
 		return
 	}
-	u.mergeBonuses(&userLevel)
 	u.LevelConfig = userLevel
 }
 
@@ -100,54 +101,11 @@ func (u User) getUserLevel(l config.Levels) config.LevelConfig {
 	for i := len(l) - 1; i >= 0; i-- {
 		config := l[i]
 		if userPoints > config.PointsRequired {
-			if i > 0 {
-				config.PointsToNextLevel = l[i-1].PointsRequired
-			}
 			userLevel = config
 			break
 		}
 	}
 	return userLevel
-}
-
-// when a user levels up, he gets new bonuses and carries over his
-// unused ones.
-func (u *User) mergeBonuses(userLevel *config.LevelConfig) {
-	for _, earnedBonus := range userLevel.Bonuses {
-		for _, ownedBonus := range u.LevelConfig.Bonuses {
-			if earnedBonus.Type == ownedBonus.Type {
-				earnedBonus.Count += ownedBonus.Count
-			}
-		}
-	}
-}
-
-// AddBonus to user
-func (u *User) AddBonus(bonusName string, count int) {
-	if len(u.LevelConfig.Bonuses) == 0 {
-		u.addNewBonus(bonusName, count)
-	} else {
-		u.incrementBonus(bonusName, count)
-	}
-}
-
-func (u *User) addNewBonus(bonusName string, count int) {
-	newBonuses := make([]bonus.Bonus, 1)
-	newBonuses[0] = bonus.Bonus{
-		Type:  bonusName,
-		Count: count,
-	}
-	u.LevelConfig.Bonuses = newBonuses
-}
-
-func (u *User) incrementBonus(bonusName string, count int) {
-	for i := range u.LevelConfig.Bonuses {
-		b := &u.LevelConfig.Bonuses[i]
-		if b.Type == bonusName {
-			b.Count += count
-			break
-		}
-	}
 }
 
 // CheckPassword checks a user's saved hashed password against a string.
@@ -164,4 +122,79 @@ func HashPassword(pw string) (string, error) {
 		return "", errors.New("Couldn't hash password")
 	}
 	return string(hashed), nil
+}
+
+// UpdateBonuses Adds bonuses to a User struct. Returns true if the transaction
+// was made, and false if the user doesn't have enough points.
+// NOTE: AddLetterBonus will not exist in this array. The
+// Letter Bonus will only have an array of letters, with the
+// Bonus object built on the UI if letters exist.
+func (u *User) UpdateBonuses(bonuses []bonus.Bonus, letters []bonus.Bonus) bool {
+
+	// check user has enough points
+	hasEnoughPoints := u.checkPoints(bonuses, letters)
+	if !hasEnoughPoints {
+		return false
+	}
+	u.mergeLetters(letters)
+	u.mergeBonuses(bonuses)
+	return true
+}
+
+func (u *User) checkPoints(bonuses []bonus.Bonus, letters []bonus.Bonus) bool {
+	debitTotal := 0
+	for _, b := range bonuses {
+		debitTotal += b.Count
+	}
+	for _, l := range letters {
+		debitTotal += l.Count
+	}
+	if debitTotal > u.BonusSelectionPoints {
+		return false
+	}
+	u.BonusSelectionPoints -= debitTotal
+	return true
+}
+
+func (u *User) mergeBonuses(bonuses []bonus.Bonus) {
+	result := make(map[string]int)
+	merged := append(u.Bonuses, bonuses...)
+	for _, b := range merged {
+		result[b.Type] += b.Count
+		// if _, ok := result[b.Type]; ok {
+		// 	result[b.Type] += b.Count
+		// } else {
+		// 	result[b.Type] = b.Count
+		// }
+	}
+	r := make([]bonus.Bonus, 0)
+	for k, v := range result {
+		b := bonus.Bonus{
+			Type:  k,
+			Count: v,
+		}
+		r = append(r, b)
+	}
+	u.Bonuses = r
+}
+
+func (u *User) mergeLetters(letters []bonus.Bonus) {
+	result := make(map[string]int)
+	merged := append(u.Letters, letters...)
+	for _, b := range merged {
+		if _, ok := result[b.Value]; ok {
+			result[b.Value] += b.Count
+		} else {
+			result[b.Value] = b.Count
+		}
+	}
+	r := make([]bonus.Bonus, 0)
+	for k, v := range result {
+		b := bonus.Bonus{
+			Value: k,
+			Count: v,
+		}
+		r = append(r, b)
+	}
+	u.Letters = r
 }
