@@ -34,8 +34,6 @@ func (h UpdateBonusesHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	println(updateReq.User.Username)
-
 	// Find user
 	userRec, err := h.Repo.Find(ctx, &updateReq.User)
 	if err != nil {
@@ -43,14 +41,9 @@ func (h UpdateBonusesHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	println("BONUSES *********")
-	for _, b := range updateReq.Bonuses {
-		println(b.Type)
-	}
-
 	// check that the user has enough points to get the bonuses,
 	// and subtract from total.
-	updated := userRec.UpdateBonuses(updateReq.Bonuses, updateReq.Letters)
+	updated := userRec.UpdateBonuses(updateReq.Bonuses)
 	if updated == false {
 		responseJSON, err := NewUserResponseJSON(userRec, "success")
 		if err != nil {

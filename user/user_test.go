@@ -25,7 +25,7 @@ func TestGetUserLevel(t *testing.T) {
 	}
 }
 
-func TestGetUserLevel3(t *testing.T) {
+func TestGetUserLevel4(t *testing.T) {
 	confs := config.NewLevelConfig()
 
 	u := User{
@@ -34,7 +34,7 @@ func TestGetUserLevel3(t *testing.T) {
 		},
 		LevelConfig: confs[0],
 	}
-	expected := 3
+	expected := 4
 	actual := u.getUserLevel(confs).Level
 
 	expectedPointsToNextLevel := 2500000
@@ -149,44 +149,17 @@ func TestMergeBonus(t *testing.T) {
 			Count: 2,
 		},
 	}
-	purchasedLetters := []bonus.Bonus{
-		bonus.Bonus{
-			Value: "A",
-			Count: 1,
-		},
-		bonus.Bonus{
-			Value: "E",
-			Count: 2,
-		},
-	}
 
-	success := u.UpdateBonuses(purchasedBonuses, purchasedLetters)
+	success := u.UpdateBonuses(purchasedBonuses)
 
-	expectedLetterACount := 3
-	expectedLetterBCount := 1
-	expectedLetterECount := 2
 	expectedWordHintBonuses := 2
 	expectedLetterBonuses := 2
+	expectedNumOfLetters := 5
 	expectedRemainingBonusSelectionPoints := 0
-	actualLetterACount := 0
-	actualLetterBCount := 0
-	actualLetterECount := 0
 	actualWordHintBonuses := 0
 	actualLetterBonuses := 0
+	actualNumOfLetters := 0
 	actualRemainingBonusSelectionPoints := u.BonusSelectionPoints
-
-	for _, l := range u.Letters {
-		switch val := l.Value; val {
-		case "A":
-			actualLetterACount += l.Count
-		case "B":
-			actualLetterBCount += l.Count
-		case "E":
-			actualLetterECount += l.Count
-		default:
-			println(val)
-		}
-	}
 
 	for _, l := range u.Bonuses {
 		switch val := l.Type; val {
@@ -197,19 +170,23 @@ func TestMergeBonus(t *testing.T) {
 		}
 	}
 
+	for _, lb := range u.Letters {
+		println(lb.Value)
+		actualNumOfLetters += lb.Count
+	}
+
 	if success != true {
 		t.Errorf("Test failed, merge was not successful (not enough selectionPoints)")
 	}
 
-	if expectedLetterACount != actualLetterACount {
-		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterACount, actualLetterACount)
+	if expectedNumOfLetters != actualNumOfLetters {
+		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedNumOfLetters, actualNumOfLetters)
 	}
-	if expectedLetterBCount != actualLetterBCount {
-		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterBCount, actualLetterBCount)
+
+	if len(u.Letters) > 4 || len(u.Letters) < 2 {
+		t.Errorf("Test failed, wrong number of letters")
 	}
-	if expectedLetterECount != actualLetterECount {
-		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterECount, actualLetterECount)
-	}
+
 	if expectedWordHintBonuses != actualWordHintBonuses {
 		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedWordHintBonuses, actualWordHintBonuses)
 	}
@@ -251,31 +228,19 @@ func TestMergeBonusFail(t *testing.T) {
 		},
 		bonus.Bonus{
 			Type:  "LetterBonus",
-			Count: 2,
-		},
-	}
-	purchasedLetters := []bonus.Bonus{
-		bonus.Bonus{
-			Value: "A",
-			Count: 1,
-		},
-		bonus.Bonus{
-			Value: "E",
-			Count: 2,
+			Count: 4,
 		},
 	}
 
-	success := u.UpdateBonuses(purchasedBonuses, purchasedLetters)
+	success := u.UpdateBonuses(purchasedBonuses)
 
 	expectedLetterACount := 2
 	expectedLetterBCount := 1
-	expectedLetterECount := 0
 	expectedWordHintBonuses := 1
 	expectedLetterBonuses := 0
 	expectedRemainingBonusSelectionPoints := 4
 	actualLetterACount := 0
 	actualLetterBCount := 0
-	actualLetterECount := 0
 	actualWordHintBonuses := 0
 	actualLetterBonuses := 0
 	actualRemainingBonusSelectionPoints := u.BonusSelectionPoints
@@ -286,8 +251,6 @@ func TestMergeBonusFail(t *testing.T) {
 			actualLetterACount += l.Count
 		case "B":
 			actualLetterBCount += l.Count
-		case "E":
-			actualLetterECount += l.Count
 		default:
 			println(val)
 		}
@@ -311,9 +274,6 @@ func TestMergeBonusFail(t *testing.T) {
 	}
 	if expectedLetterBCount != actualLetterBCount {
 		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterBCount, actualLetterBCount)
-	}
-	if expectedLetterECount != actualLetterECount {
-		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedLetterECount, actualLetterECount)
 	}
 	if expectedWordHintBonuses != actualWordHintBonuses {
 		t.Errorf("Test failed, expected:'%d', got:'%d'", expectedWordHintBonuses, actualWordHintBonuses)

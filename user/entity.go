@@ -115,6 +115,7 @@ func (u User) CheckPassword(pw string) error {
 	return bcrypt.CompareHashAndPassword(hashedPwBtyeArr, pwBtyeArr)
 }
 
+// HashPassword turns a string into a hash for password storage
 func HashPassword(pw string) (string, error) {
 	byteArr := []byte(pw)
 	hashed, err := bcrypt.GenerateFromPassword(byteArr, bcrypt.DefaultCost)
@@ -126,28 +127,22 @@ func HashPassword(pw string) (string, error) {
 
 // UpdateBonuses Adds bonuses to a User struct. Returns true if the transaction
 // was made, and false if the user doesn't have enough points.
-// NOTE: AddLetterBonus will not exist in this array. The
-// Letter Bonus will only have an array of letters, with the
-// Bonus object built on the UI if letters exist.
-func (u *User) UpdateBonuses(bonuses []bonus.Bonus, letters []bonus.Bonus) bool {
+func (u *User) UpdateBonuses(bonuses []bonus.Bonus) bool {
 
 	// check user has enough points
-	hasEnoughPoints := u.checkPoints(bonuses, letters)
+	hasEnoughPoints := u.checkPoints(bonuses)
 	if !hasEnoughPoints {
 		return false
 	}
-	u.mergeLetters(letters)
 	u.mergeBonuses(bonuses)
+	u.buildLetters(bonuses)
 	return true
 }
 
-func (u *User) checkPoints(bonuses []bonus.Bonus, letters []bonus.Bonus) bool {
+func (u *User) checkPoints(bonuses []bonus.Bonus) bool {
 	debitTotal := 0
 	for _, b := range bonuses {
 		debitTotal += b.Count
-	}
-	for _, l := range letters {
-		debitTotal += l.Count
 	}
 	if debitTotal > u.BonusSelectionPoints {
 		return false
@@ -161,11 +156,6 @@ func (u *User) mergeBonuses(bonuses []bonus.Bonus) {
 	merged := append(u.Bonuses, bonuses...)
 	for _, b := range merged {
 		result[b.Type] += b.Count
-		// if _, ok := result[b.Type]; ok {
-		// 	result[b.Type] += b.Count
-		// } else {
-		// 	result[b.Type] = b.Count
-		// }
 	}
 	r := make([]bonus.Bonus, 0)
 	for k, v := range result {
@@ -176,6 +166,31 @@ func (u *User) mergeBonuses(bonuses []bonus.Bonus) {
 		r = append(r, b)
 	}
 	u.Bonuses = r
+}
+
+func (u *User) buildLetters(bonuses []bonus.Bonus) {
+	for _, bonus := range bonuses {
+		if bonus.Type == "LetterBonus" {
+			newLetters := getRandomLetterBonuses(bonus.Count)
+			u.mergeLetters(newLetters)
+			break
+		}
+	}
+}
+
+func getRandomLetterBonuses(count int) []bonus.Bonus {
+	letters := make([]bonus.Bonus, count)
+	ls := game.NewLetterSet(0, 0)
+
+	for i := 0; i < count; i++ {
+		letter := ls.GetRandomLetter()
+		letterBonus := bonus.Bonus{
+			Value: letter.Value,
+			Count: 1,
+		}
+		letters[i] = letterBonus
+	}
+	return letters
 }
 
 func (u *User) mergeLetters(letters []bonus.Bonus) {

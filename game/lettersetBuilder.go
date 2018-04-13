@@ -52,7 +52,7 @@ func (l Letterset) getLetters(numLetters int) []Letter {
 
 	index := 0
 	for index < numLetters {
-		letter := l.getRandomLetter()
+		letter := l.GetRandomLetter()
 		letter.ID = strconv.Itoa(index)
 		letters[index] = letter
 		index++
@@ -60,8 +60,8 @@ func (l Letterset) getLetters(numLetters int) []Letter {
 	return letters
 }
 
-// GetRandomLetter
-func (l Letterset) getRandomLetter() Letter {
+// GetRandomLetter returns a random Letter{}
+func (l Letterset) GetRandomLetter() Letter {
 	var letter Letter
 	upto := 0
 	ri := l.getRandomInt()
